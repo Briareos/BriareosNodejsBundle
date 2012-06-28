@@ -1,0 +1,21 @@
+{
+    "name":"briareos/nodejs-bundle",
+    "type":"package",
+    "version":"dev-master",
+    "authors":[
+        {
+            "name":"Milos Colakovic",
+            "email":"gmefox@gmail.com"
+        }
+    ],
+    "require":{
+        "symfony/symfony":"2.1.x-dev",
+        "sensio/framework-extra-bundle":"2.1.x-dev"
+    },
+    "autoload":{
+        "psr-0":{
+            "Briareos\\NodejsBundle":""
+        }
+    },
+    "target-dir":"Briareos/NodejsBundle"
+}
