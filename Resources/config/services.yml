@@ -1,0 +1,12 @@
+parameters:
+    nodejs.dispatcher.class: Briareos\NodejsBundle\Nodejs\Dispatcher
+    nodejs.dispatcher.host: localhost
+    nodejs.dispatcher.port: 8080
+    nodejs.dispatcher.resource: /socket.io
+    nodejs.dispatcher.service_key: kurumi2012
+    nodejs.dispatcher.connect_timeout: 5000
+
+services:
+    nodejs.dispatcher:
+        class: %nodejs.dispatcher.class%
+        arguments: [host, port, reousrce, service_key, connect_timeout,]
