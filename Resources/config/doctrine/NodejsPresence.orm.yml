@@ -1,0 +1,25 @@
+Briareos\NodejsBundle\Entity\NodejsPresence:
+    type: entity
+    table: nodejs__presence
+    repositoryClass: Briareos\NodejsBundle\Entity\NodejsPresenceRepository
+    fields:
+        id:
+            type: integer
+            id: true
+            generator:
+                strategy: AUTO
+        action:
+            type: string
+            length: 255
+            nullable: true
+        seenAt:
+            type: datetime
+    oneToOne:
+        subject:
+            targetEntity: NodejsSubjectInterface
+            joinColumn:
+                name: subject_id
+                referencedColumnName: id
+                nullable: false
+                onDelete: SET NULL
+    lifecycleCallbacks: {  }

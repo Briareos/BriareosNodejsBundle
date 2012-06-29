@@ -5,6 +5,7 @@ namespace Briareos\NodejsBundle\Controller;
 use Symfony\Component\DependencyInjection\ContainerAware;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
+use Symfony\Component\HttpFoundation\Response;
 
 class NodejsController extends ContainerAware
 {
@@ -14,8 +15,8 @@ class NodejsController extends ContainerAware
      */
     public function messageAction()
     {
-        /** @var $nodejs \App\NodejsBundle\Util\Nodejs */
-        $nodejs = $this->container->get('nodejs');
+        /** @var $nodejs \Briareos\NodejsBundle\Nodejs\DispatcherInterface */
+        $nodejs = $this->container->get('nodejs.dispatcher');
         /** @var $request \Symfony\Component\HttpFoundation\Request */
         $request = $this->container->get('request');
 

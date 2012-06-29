@@ -56,12 +56,18 @@ class Message {
         return $this->broadcast;
     }
 
-    public function toArray() {
+    public function toArray()
+    {
         return array(
             'broadcast' => $this->getBroadcast(),
             'callback' => $this->getCallback(),
             'channel' => $this->getChannel(),
             'data' => $this->getData(),
         );
+    }
+
+    public function toJsonString()
+    {
+        return json_encode($this->toArray());
     }
 }
