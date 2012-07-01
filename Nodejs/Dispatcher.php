@@ -10,50 +10,10 @@ class Dispatcher implements DispatcherInterface
     private $secure;
     private $host;
     private $port;
+    private $connectTimeout;
     private $resource;
     private $serviceKey;
-    private $connectTimeout;
     private $websocketSwfLocation = 'bundles/nodejs/WebSocketMain.swf';
-
-    public function __construct($secure = false, $host = 'localhost', $port = 8080, $resource = '/socket.io', $serviceKey = '', $connectTimeout = 5000)
-    {
-        $this->setSecure($secure);
-        $this->setHost($host);
-        $this->setPort($port);
-        $this->setResource($resource);
-        $this->setServiceKey($serviceKey);
-        $this->setConnectTimeout($connectTimeout);
-    }
-
-    public function setWebsocketSwfLocation($location)
-    {
-        $this->websocketSwfLocation = $location;
-    }
-
-    public function getWebsocketSwfLocation()
-    {
-        return $this->websocketSwfLocation;
-    }
-
-    public function dispatch(Message $message)
-    {
-        $ch = curl_init($this->getServiceUrl());
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $message->toJsonString());
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 1);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-            'NodejsServiceKey: ' . $this->getServiceKey(),
-        ));
-        curl_exec($ch);
-    }
-
-    public function getServiceUrl($type = 'message')
-    {
-        switch ($type) {
-            case 'message':
-                return 'http://' . $this->getHost() . ':' . $this->getPort() . '/nodejs/publish';
-        }
-    }
 
     public function setConnectTimeout($connectTimeout)
     {
@@ -113,5 +73,45 @@ class Dispatcher implements DispatcherInterface
     public function getSecure()
     {
         return $this->secure;
+    }
+
+    public function __construct($secure = false, $host = 'localhost', $port = 8080, $connectTimeout = 5000, $resource = '/socket.io', $serviceKey = '')
+    {
+        $this->setSecure($secure);
+        $this->setHost($host);
+        $this->setPort($port);
+        $this->setConnectTimeout($connectTimeout);
+        $this->setResource($resource);
+        $this->setServiceKey($serviceKey);
+    }
+
+    public function setWebsocketSwfLocation($location)
+    {
+        $this->websocketSwfLocation = $location;
+    }
+
+    public function getWebsocketSwfLocation()
+    {
+        return $this->websocketSwfLocation;
+    }
+
+    public function dispatch(Message $message)
+    {
+        $ch = curl_init($this->getServiceUrl());
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $message->toJsonString());
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 1);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            'NodejsServiceKey: ' . $this->getServiceKey(),
+        ));
+        curl_exec($ch);
+    }
+
+    public function getServiceUrl($type = 'message')
+    {
+        switch ($type) {
+            case 'message':
+                return 'http://' . $this->getHost() . ':' . $this->getPort() . '/nodejs/publish';
+        }
     }
 }

@@ -3,15 +3,10 @@ Briareos\NodejsBundle\Entity\NodejsPresence:
     table: nodejs__presence
     repositoryClass: Briareos\NodejsBundle\Entity\NodejsPresenceRepository
     fields:
-        id:
-            type: integer
-            id: true
-            generator:
-                strategy: AUTO
-        action:
+        authToken:
             type: string
             length: 255
-            nullable: true
+            id: true
         seenAt:
             type: datetime
     oneToOne:
@@ -20,6 +15,5 @@ Briareos\NodejsBundle\Entity\NodejsPresence:
             joinColumn:
                 name: subject_id
                 referencedColumnName: id
-                nullable: false
-                onDelete: SET NULL
+                onDelete: CASCADE
     lifecycleCallbacks: {  }

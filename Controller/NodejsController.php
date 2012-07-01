@@ -6,6 +6,8 @@ use Symfony\Component\DependencyInjection\ContainerAware;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\HttpFoundation\Response;
+use Briareos\NodejsBundle\Entity\NodejsPresence;
+use Briareos\NodejsBundle\Entity\NodejsSubjectInterface;
 
 class NodejsController extends ContainerAware
 {
@@ -15,42 +17,43 @@ class NodejsController extends ContainerAware
      */
     public function messageAction()
     {
-        /** @var $nodejs \Briareos\NodejsBundle\Nodejs\DispatcherInterface */
-        $nodejs = $this->container->get('nodejs.dispatcher');
+        /** @var $dispatcher \Briareos\NodejsBundle\Nodejs\DispatcherInterface */
+        $dispatcher = $this->container->get('nodejs.dispatcher');
+        /** @var $authenticator \Briareos\NodejsBundle\Nodejs\Authenticator */
+        $authenticator = $this->container->get('nodejs.authenticator');
         /** @var $request \Symfony\Component\HttpFoundation\Request */
         $request = $this->container->get('request');
 
-        if ($nodejs->getServiceKey() !== $request->request->get('serviceKey', '')) {
-            throw new AccessDeniedException('Invalid node.js service key provided.');
+        if ($dispatcher->getServiceKey() !== $request->request->get('serviceKey', '')) {
+            throw new AccessDeniedException('Invalid service key provided.');
         }
         $message = json_decode($request->request->get('messageJson'));
+        $responseData = array();
 
         switch ($message->messageType) {
             case 'authenticate':
-                /** @var $connection \Doctrine\DBAL\Connection */
-                $connection = $this->container->get('doctrine.orm.default_entity_manager')->getConnection();
-                $query = $connection->executeQuery('SELECT s.user_id FROM session s WHERE MD5(s.session_id) = :auth_token ORDER BY s.session_time DESC LIMIT 1', array(
-                    ':auth_token' => $message->authToken,
-                ));
-                $userId = $query->fetchColumn();
-
+                $presence = $authenticator->getPresence($message->authToken);
                 $channels = array();
-                if ($userId) {
-                    $channels[] = "nodejs_user_$userId";
-                    $presenceUserIds = $this->getPresenceUids($userId);
-                } else {
-                    $channels[] = "nodejs_user_0";
-                    $presenceUserIds = array();
-                }
+                $authenticated = false;
+                $subjectId = 0;
+                $presenceSubjectIds = array();
 
-                $data = array(
-                    'serviceKey' => $nodejs->getServiceKey(),
+                if ($presence instanceof NodejsPresence) {
+                    $authenticated = true;
+                    if ($presence->getSubject() instanceof NodejsSubjectInterface) {
+                        $subjectId = $presence->getSubject()->getId();
+                    }
+                }
+                $channels[] = "nodejs_user_$subjectId";
+
+                $responseData = array(
+                    'serviceKey' => $dispatcher->getServiceKey(),
                     'authToken' => $message->authToken,
                     'clientId' => $message->clientId,
-                    'nodejsValidAuthToken' => (bool)$userId,
+                    'nodejsValidAuthToken' => $authenticated,
                     'channels' => $channels,
-                    'presenceUids' => $presenceUserIds,
-                    'uid' => (int)$userId,
+                    'presenceUids' => $presenceSubjectIds,
+                    'uid' => $subjectId,
                     'contentTokens' => isset($message->contentTokens) ? $message->contentTokens : array(),
                 );
                 break;
@@ -61,9 +64,9 @@ class NodejsController extends ContainerAware
                 throw new AccessDeniedException(sprintf('Invalid message type: %s', $message->messageType));
         }
 
-        $response = new Response(json_encode($data));
+        $response = new Response(json_encode($responseData));
         $response->headers->set('Content-Type', 'application/json');
-        $response->headers->set('NodejsServiceKey', $nodejs->getServiceKey());
+        $response->headers->set('NodejsServiceKey', $dispatcher->getServiceKey());
         return $response;
     }
 }

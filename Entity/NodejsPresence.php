@@ -11,14 +11,9 @@ use Briareos\NodejsBundle\Entity\NodejsSubjectInterface;
 class NodejsPresence
 {
     /**
-     * @var integer $id
+     * @var string $authToken
      */
-    private $id;
-
-    /**
-     * @var string $action
-     */
-    private $action;
+    private $authToken;
 
     /**
      * @var \DateTime
@@ -34,38 +29,6 @@ class NodejsPresence
     public function __construct()
     {
         $this->setSeenAt(new \DateTime());
-    }
-
-    /**
-     * @param string $action
-     */
-    public function setAction($action)
-    {
-        $this->action = $action;
-    }
-
-    /**
-     * @return string
-     */
-    public function getAction()
-    {
-        return $this->action;
-    }
-
-    /**
-     * @param int $id
-     */
-    public function setId($id)
-    {
-        $this->id = $id;
-    }
-
-    /**
-     * @return int
-     */
-    public function getId()
-    {
-        return $this->id;
     }
 
     /**
@@ -100,4 +63,25 @@ class NodejsPresence
         return $this->subject;
     }
 
+    /**
+     * Set authToken
+     *
+     * @param string $authToken
+     * @return NodejsPresence
+     */
+    public function setAuthToken($authToken)
+    {
+        $this->authToken = $authToken;
+        return $this;
+    }
+
+    /**
+     * Get authToken
+     *
+     * @return string
+     */
+    public function getAuthToken()
+    {
+        return $this->authToken;
+    }
 }
