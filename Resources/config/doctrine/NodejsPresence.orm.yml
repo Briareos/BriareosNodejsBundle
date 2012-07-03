@@ -9,7 +9,7 @@ Briareos\NodejsBundle\Entity\NodejsPresence:
             id: true
         seenAt:
             type: datetime
-    oneToOne:
+    manyToOne:
         subject:
             targetEntity: NodejsSubjectInterface
             joinColumn:
