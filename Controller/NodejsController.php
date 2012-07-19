@@ -44,7 +44,7 @@ class NodejsController extends ContainerAware
                         $subjectId = $presence->getSubject()->getId();
                     }
                 }
-                $channels[] = "nodejs_user_$subjectId";
+                $channels[] = "user_$subjectId";
 
                 $responseData = array(
                     'serviceKey' => $dispatcher->getServiceKey(),
