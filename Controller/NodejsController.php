@@ -14,6 +14,10 @@ class NodejsController extends ContainerAware
 
     /**
      * @Route("/nodejs/message", name="nodejs_message")
+     *
+     * @throws \Symfony\Component\Security\Core\Exception\AccessDeniedException
+     *
+     * @return \Symfony\Component\HttpFoundation\Response
      */
     public function messageAction()
     {

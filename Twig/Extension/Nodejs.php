@@ -5,6 +5,7 @@ namespace Briareos\NodejsBundle\Twig\Extension;
 use Briareos\NodejsBundle\Nodejs\DispatcherInterface;
 use Briareos\NodejsBundle\Nodejs\Authenticator;
 use Symfony\Component\HttpFoundation\Session\Session;
+use Briareos\NodejsBundle\Entity\NodejsSubjectInterface;
 
 class Nodejs extends \Twig_Extension
 {
@@ -38,9 +39,11 @@ class Nodejs extends \Twig_Extension
         );
     }
 
-    public function getAuthToken(Session $session)
+    public function getAuthToken(Session $session, NodejsSubjectInterface $subject = null)
     {
-        return $this->authenticator->generateAuthToken($session);
+        // @TODO this job definitely shouldn't be left to twig, in fact, the whole method smells, with its arguments and all
+        $this->authenticator->authenticate($session, $subject);
+        return $this->authenticator->generateAuthToken($session, $subject);
     }
 
     public function getName()
