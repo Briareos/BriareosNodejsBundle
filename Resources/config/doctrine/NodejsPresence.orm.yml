@@ -7,6 +7,11 @@ Briareos\NodejsBundle\Entity\NodejsPresence:
             type: string
             length: 255
             id: true
+        sessionId:
+            type: string
+            length: 255
+        createdAt:
+            type: datetime
         seenAt:
             type: datetime
     manyToOne:

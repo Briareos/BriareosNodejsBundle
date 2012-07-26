@@ -28,6 +28,7 @@ class NodejsPresence
 
     public function __construct()
     {
+        $this->setCreatedAt(new \DateTime());
         $this->setSeenAt(new \DateTime());
     }
 
@@ -83,5 +84,62 @@ class NodejsPresence
     public function getAuthToken()
     {
         return $this->authToken;
+    }
+
+    /**
+     * @var string $sessionId
+     */
+    private $sessionId;
+
+    /**
+     * @var \DateTime $createdAt
+     */
+    private $createdAt;
+
+
+    /**
+     * Set sessionId
+     *
+     * @param string $sessionId
+     * @return NodejsPresence
+     */
+    public function setSessionId($sessionId)
+    {
+        $this->sessionId = $sessionId;
+
+        return $this;
+    }
+
+    /**
+     * Get sessionId
+     *
+     * @return string
+     */
+    public function getSessionId()
+    {
+        return $this->sessionId;
+    }
+
+    /**
+     * Set createdAt
+     *
+     * @param \DateTime $createdAt
+     * @return NodejsPresence
+     */
+    public function setCreatedAt($createdAt)
+    {
+        $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    /**
+     * Get createdAt
+     *
+     * @return \DateTime
+     */
+    public function getCreatedAt()
+    {
+        return $this->createdAt;
     }
 }
