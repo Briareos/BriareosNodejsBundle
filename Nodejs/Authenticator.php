@@ -23,14 +23,13 @@ class Authenticator
     public function authenticate(Session $session, NodejsSubjectInterface $subject = null)
     {
         $presenceClassName = $this->repository->getClassName();
-        $authToken = $this->generateAuthToken($session, $subject);
+        $authToken = $this->generateAuthToken($session);
         /** @var $presence \Briareos\NodejsBundle\Entity\NodejsPresence */
         $presence = $this->repository->findOneBy(array(
             'authToken' => $authToken,
         ));
         if ($presence === null) {
             $presence = new $presenceClassName();
-            $presence->setSessionId($session->getId());
             $presence->setAuthToken($authToken);
             if ($subject !== null) {
                 $presence->setSubject($subject);
@@ -50,11 +49,8 @@ class Authenticator
         return $this->repository->find($authToken);
     }
 
-    public static function generateAuthToken(Session $session, NodejsSubjectInterface $subject = null)
+    public function generateAuthToken(Session $session)
     {
-        if ($subject !== null) {
-            return md5($session->getId() . '-' . $subject->getId() . '-' . $subject->getSalt());
-        }
         return md5($session->getId());
     }
 
