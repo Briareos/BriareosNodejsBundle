@@ -7,6 +7,7 @@
             secure:false,
             host:'localhost',
             port:8080,
+            resource:'/socket.io',
             connectTimeout:5000
         };
         this.contentChannelNotificationCallbacks = {};
@@ -22,6 +23,7 @@
         var nodejs = this;
         var scheme = this.settings.secure ? 'https' : 'http',
             url = scheme + '://' + this.settings.host + ':' + this.settings.port;
+        var resource = scheme + this.settings.resource + '/socket.io.js';
         if (typeof window.io === 'undefined') {
             return false;
         }
