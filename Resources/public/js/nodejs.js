@@ -21,13 +21,13 @@
 
     Nodejs.prototype.connect = function () {
         var nodejs = this;
-        var scheme = this.settings.secure ? 'https' : 'http',
-            url = scheme + '://' + this.settings.host + ':' + this.settings.port;
-        var resource = scheme + this.settings.resource + '/socket.io.js';
+        this.scheme = this.settings.secure ? 'https' : 'http';
+        this.url = this.scheme + '://' + this.settings.host + ':' + this.settings.port;
+        this.resource = this.url + this.resource + '/socket.io.js';
         if (typeof window.io === 'undefined') {
-            return false;
+            throw "IO isn't defined.";
         }
-        this.socket = window.io.connect(url, {'connect timeout':this.settings.connectTimeout});
+        this.socket = window.io.connect(this.url, {'connect timeout':this.settings.connectTimeout});
         this.socket.on('connect', function () {
             nodejs.socket.emit('authenticate', {
                 authToken:nodejs.authToken
@@ -98,6 +98,12 @@
                 }
             }
         });
+    };
+
+    Nodejs.prototype.disconnect = function () {
+        this.socket.emit('disconnect');
+        this.socket.disconnect();
+        delete window.io.sockets[this.url];
     };
 
     window.Nodejs = Nodejs;

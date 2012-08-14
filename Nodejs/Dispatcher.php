@@ -98,11 +98,14 @@ class Dispatcher implements DispatcherInterface
     public function dispatch(Message $message)
     {
         $ch = curl_init($this->getServiceUrl());
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $message->toJsonString());
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 1);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-            'NodejsServiceKey: ' . $this->getServiceKey(),
+        curl_setopt_array($ch, array(
+            CURLOPT_POST => 1,
+            CURLOPT_POSTFIELDS => $message->toJsonString(),
+            CURLOPT_CONNECTTIMEOUT => 1,
+            CURLOPT_TIMEOUT => 1,
+            CURLOPT_HTTPHEADER => array(
+                'NodejsServiceKey: ' . $this->getServiceKey(),
+            )
         ));
         curl_exec($ch);
     }
