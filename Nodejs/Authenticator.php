@@ -5,7 +5,7 @@ namespace Briareos\NodejsBundle\Nodejs;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Doctrine\ORM\EntityManager;
 use Briareos\NodejsBundle\Entity\NodejsSubjectInterface;
-use Symfony\Component\HttpFoundation\Session\Session;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 class Authenticator
 {
@@ -20,7 +20,7 @@ class Authenticator
         $this->lifetime = $lifetime;
     }
 
-    public function authenticate(Session $session, NodejsSubjectInterface $subject = null)
+    public function authenticate(SessionInterface $session, NodejsSubjectInterface $subject = null)
     {
         $presenceClassName = $this->repository->getClassName();
         $authToken = $this->generateAuthToken($session, $subject);
@@ -42,7 +42,7 @@ class Authenticator
     }
 
     /**
-     * @param Session $session
+     * @param SessionInterface $session
      * @return \Briareos\NodejsBundle\Entity\NodejsPresence
      */
     public function getPresence($authToken)
@@ -50,7 +50,7 @@ class Authenticator
         return $this->repository->find($authToken);
     }
 
-    public static function generateAuthToken(Session $session, NodejsSubjectInterface $subject = null)
+    public static function generateAuthToken(SessionInterface $session, NodejsSubjectInterface $subject = null)
     {
         if ($subject !== null) {
             return md5($session->getId() . '-' . $subject->getId() . '-' . $subject->getSalt());
