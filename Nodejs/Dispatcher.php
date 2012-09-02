@@ -107,7 +107,8 @@ class Dispatcher implements DispatcherInterface
                 'NodejsServiceKey: ' . $this->getServiceKey(),
             )
         ));
-        curl_exec($ch);
+        $return = curl_exec($ch);
+        return $return;
     }
 
     public function getServiceUrl($type = 'message')
