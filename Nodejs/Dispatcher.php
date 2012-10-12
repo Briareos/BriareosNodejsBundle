@@ -105,7 +105,8 @@ class Dispatcher implements DispatcherInterface
             CURLOPT_TIMEOUT => 1,
             CURLOPT_HTTPHEADER => array(
                 'NodejsServiceKey: ' . $this->getServiceKey(),
-            )
+            ),
+            CURLOPT_RETURNTRANSFER => 1,
         ));
         $return = curl_exec($ch);
         return $return;

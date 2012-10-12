@@ -5,7 +5,6 @@ namespace Briareos\NodejsBundle\Listener;
 use Symfony\Component\Security\Http\Event\InteractiveLoginEvent;
 use Symfony\Component\Security\Core\SecurityContextInterface;
 use Briareos\NodejsBundle\Nodejs\Authenticator;
-use Briareos\NodejsBundle\Entity\NodejsSubjectInterface;
 use Symfony\Component\HttpFoundation\Request;
 
 class LoginListener

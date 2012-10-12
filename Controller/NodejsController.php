@@ -28,7 +28,7 @@ class NodejsController extends ContainerAware
         /** @var $request \Symfony\Component\HttpFoundation\Request */
         $request = $this->container->get('request');
 
-        if ($dispatcher->getServiceKey() !== $request->request->get('serviceKey', '')) {
+        if ($dispatcher->getServiceKey() !== $request->request->getAlnum('serviceKey', '')) {
             throw new AccessDeniedException('Invalid service key provided.');
         }
         $message = json_decode($request->request->get('messageJson'));
