@@ -71,12 +71,12 @@
 settings = {
   scheme: 'http',
   port: 8080,
-  host: 'localhost',
+  host: 'symfony.servehttp.com',
   resource: '/socket.io',
   serviceKey: '',
   backend: {
     port: 80,
-    host: 'localhost',
+    host: 'symfony.servehttp.com',
     scheme: 'http',
     basePath: '',
     messagePath: '/app_dev.php/nodejs/message'
@@ -102,8 +102,7 @@ settings = {
   extensions: [],
   clientsCanWriteToChannels: false,
   clientsCanWriteToClients: false,
-  //transports: ['websocket', 'flashsocket', 'htmlfile', 'xhr-polling', 'jsonp-polling'],
-  transports: ['xhr-polling', 'jsonp-polling'],
+  transports: ['websocket', 'flashsocket', 'htmlfile', 'xhr-polling', 'jsonp-polling'],
   jsMinification: true,
   jsEtag: true,
   logLevel: 1
