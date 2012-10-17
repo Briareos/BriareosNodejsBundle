@@ -20,10 +20,38 @@ class Configuration implements ConfigurationInterface
         $treeBuilder = new TreeBuilder();
         $rootNode = $treeBuilder->root('briareos_nodejs');
 
+        $rootNode
+            ->children()
+                ->arrayNode('dispatcher')
+                    ->children()
+                        ->booleanNode('secure')->defaultFalse()->end()
+                        ->scalarNode('host')->defaultValue('localhost')->end()
+                        ->scalarNode('port')->defaultValue(8080)
+                            ->validate()
+                                ->ifTrue(function($v) {
+                                    return !is_int($v) || ($v < 1) || ($v > 65535);
+                                })
+                                ->thenInvalid('Must be a number between 1 and 65535')
+                            ->end()
+                        ->end()
+                        ->scalarNode('resource')->defaultValue('/socket.io')->end()
+                        ->scalarNode('service_key')->defaultValue('')->end()
+                        ->scalarNode('connect_timeout')->defaultValue(5000)->end()
+                    ->end()
+                ->end()
+                ->arrayNode('authenticator')
+                    ->children()
+                        ->scalarNode('lifetime')->defaultValue(900)->end()
+                    ->end()
+                ->end()
+            ->end();
+
         // Here you should define the parameters that are allowed to
         // configure your bundle. See the documentation linked above for
         // more information on that topic.
 
         return $treeBuilder;
     }
+
+
 }
