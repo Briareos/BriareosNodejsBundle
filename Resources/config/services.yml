@@ -1,15 +1,8 @@
 parameters:
     nodejs.dispatcher.class: Briareos\NodejsBundle\Nodejs\Dispatcher
-    nodejs.dispatcher.secure: false
-    nodejs.dispatcher.host: symfony.servehttp.com
-    nodejs.dispatcher.port: 8080
-    nodejs.dispatcher.resource: /socket.io
-    nodejs.dispatcher.service_key: kurumi2012
-    nodejs.dispatcher.connect_timeout: 5000
     nodejs.twig.extension.class: Briareos\NodejsBundle\Twig\Extension\Nodejs
     nodejs.authenticator.class: Briareos\NodejsBundle\Nodejs\Authenticator
     nodejs.authenticator.entity_class: Briareos\NodejsBundle\Entity\NodejsPresence
-    nodejs.authenticator.lifetime: 900
     nodejs.login_listener.class: Briareos\NodejsBundle\Listener\LoginListener
 
 services:
