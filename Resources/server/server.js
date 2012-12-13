@@ -7,8 +7,9 @@
 var request = require('request'),
     url = require('url'),
     fs = require('fs'),
-    _express = require('express'),
-    express = _express(),
+    express = require('express'),
+    http = require('http'),
+    https = require('https'),
     socket_io = require('socket.io'),
     util = require('util'),
     querystring = require('querystring'),
@@ -21,41 +22,41 @@ var channels = {},
     contentChannelTimeoutIds = {},
     tokenChannels = {},
     settingsDefaults = {
-        scheme: 'http',
-        port: 8080,
-        host: 'localhost',
-        resource: '/socket.io',
-        serviceKey: '',
-        debug: false,
-        baseAuthPath: '/nodejs/',
-        publishUrl: 'publish',
-        kickUserUrl: 'user/kick/:uid',
-        logoutUserUrl: 'user/logout/:authtoken',
-        addUserToChannelUrl: 'user/channel/add/:channel/:uid',
-        removeUserFromChannelUrl: 'user/channel/remove/:channel/:uid',
-        addChannelUrl: 'channel/add/:channel',
-        removeChannelUrl: 'channel/remove/:channel',
-        setUserPresenceListUrl: 'user/presence-list/:uid/:uidList',
-        addAuthTokenToChannelUrl: 'authtoken/channel/add/:channel/:uid',
-        removeAuthTokenFromChannelUrl: 'authtoken/channel/remove/:channel/:uid',
-        toggleDebugUrl: 'debug/toggle',
-        contentTokenUrl: 'content/token',
-        publishMessageToContentChannelUrl: 'content/token/message',
-        getContentTokenUsersUrl: 'content/token/users',
-        extensions: [],
-        clientsCanWriteToChannels: false,
-        clientsCanWriteToClients: false,
-        transports: ['websocket', 'flashsocket', 'htmlfile', 'xhr-polling', 'jsonp-polling'],
-        jsMinification: true,
-        jsEtag: true,
-        backend: {
-            host: 'localhost',
-            scheme: 'http',
-            port: 80,
-            basePath: '',
-            messagePath: '/nodejs/message'
+        scheme:'http',
+        port:8080,
+        host:'localhost',
+        resource:'/socket.io',
+        serviceKey:'',
+        debug:false,
+        baseAuthPath:'/nodejs/',
+        publishUrl:'publish',
+        kickUserUrl:'user/kick/:uid',
+        logoutUserUrl:'user/logout/:authtoken',
+        addUserToChannelUrl:'user/channel/add/:channel/:uid',
+        removeUserFromChannelUrl:'user/channel/remove/:channel/:uid',
+        addChannelUrl:'channel/add/:channel',
+        removeChannelUrl:'channel/remove/:channel',
+        setUserPresenceListUrl:'user/presence-list/:uid/:uidList',
+        addAuthTokenToChannelUrl:'authtoken/channel/add/:channel/:uid',
+        removeAuthTokenFromChannelUrl:'authtoken/channel/remove/:channel/:uid',
+        toggleDebugUrl:'debug/toggle',
+        contentTokenUrl:'content/token',
+        publishMessageToContentChannelUrl:'content/token/message',
+        getContentTokenUsersUrl:'content/token/users',
+        extensions:[],
+        clientsCanWriteToChannels:false,
+        clientsCanWriteToClients:false,
+        transports:['websocket', 'flashsocket', 'htmlfile', 'xhr-polling', 'jsonp-polling'],
+        jsMinification:true,
+        jsEtag:true,
+        backend:{
+            host:'localhost',
+            scheme:'http',
+            port:80,
+            basePath:'',
+            messagePath:'/nodejs/message'
         },
-        logLevel: 1
+        logLevel:1
     },
     extensions = [];
 
@@ -119,16 +120,16 @@ var getBackendUrl = function () {
  */
 var sendMessageToBackend = function (message, callback) {
     var requestBody = querystring.stringify({
-        messageJson: JSON.stringify(message),
-        serviceKey: settings.serviceKey
+        messageJson:JSON.stringify(message),
+        serviceKey:settings.serviceKey
     });
 
     var options = {
-        uri: settings.backend.scheme + '://' + settings.backend.host + (settings.backend.port == 80 ? '' : ':' + settings.backend.port) + settings.backend.messagePath,
-        body: requestBody,
-        headers: {
-            'Content-Length': Buffer.byteLength(requestBody),
-            'Content-Type': 'application/x-www-form-urlencoded'
+        uri:settings.backend.scheme + '://' + settings.backend.host + (settings.backend.port == 80 ? '' : ':' + settings.backend.port) + settings.backend.messagePath,
+        body:requestBody,
+        headers:{
+            'Content-Length':Buffer.byteLength(requestBody),
+            'Content-Type':'application/x-www-form-urlencoded'
         }
     }
 
@@ -213,7 +214,7 @@ var sendPresenceChangeNotification = function (uid, presenceEvent) {
                 console.log('Sending presence notification for', uid, 'to', onlineUsers[uid][i]);
             }
             for (var j in sessionIds) {
-                io.sockets.socket(sessionIds[j]).json.send({'presenceNotification': {'uid': uid, 'event': presenceEvent}});
+                io.sockets.socket(sessionIds[j]).json.send({'presenceNotification':{'uid':uid, 'event':presenceEvent}});
             }
         }
     }
@@ -230,7 +231,7 @@ var checkServiceKeyCallback = function (request, response, next) {
         next();
     }
     else {
-        response.send({'error': 'Invalid service key.'});
+        response.send({'error':'Invalid service key.'});
     }
 }
 
@@ -257,11 +258,17 @@ var getContentTokenUsers = function (request, response) {
     request.on('end', function () {
         try {
             var channel = JSON.parse(requestBody);
-            response.send({users: getContentTokenChannelUsers(channel.channel)});
         }
         catch (exception) {
             console.log('getContentTokensUsers: Invalid JSON "' + requestBody + '"', exception);
             response.send({error: 'Invalid JSON, error: ' + exception.toString()});
+        }
+        try {
+            response.send({users: getContentTokenChannelUsers(channel.channel)});
+        }
+        catch (exception) {
+            console.log('getContentTokensUsers:', exception);
+            response.send({error: 'Error calling getContentTokenChannelUsers() for channel "' + channel.channel + '", error: ' + exception.toString()});
         }
     });
 }
@@ -279,11 +286,11 @@ var toggleDebug = function (request, response) {
         try {
             var toggle = JSON.parse(requestBody);
             settings.debug = toggle.debug;
-            response.send({debug: toggle.debug});
+            response.send({debug:toggle.debug});
         }
         catch (exception) {
             console.log('toggleDebug: Invalid JSON "' + requestBody + '"', exception);
-            response.send({error: 'Invalid JSON, error: ' + e.toString()});
+            response.send({error:'Invalid JSON, error: ' + e.toString()});
         }
     });
 }
@@ -306,7 +313,7 @@ var publishMessage = function (request, response) {
         }
         catch (exception) {
             console.log('publishMessage: Invalid JSON "' + requestBody + '"', exception);
-            response.send({error: 'Invalid JSON, error: ' + exception.toString()});
+            response.send({error:'Invalid JSON, error: ' + exception.toString()});
             return;
         }
         if (message.broadcast) {
@@ -320,7 +327,7 @@ var publishMessage = function (request, response) {
             sentCount = publishMessageToChannel(message);
         }
         process.emit('message-published', message, sentCount);
-        response.send({sent: sentCount});
+        response.send({sent:sentCount});
     });
 }
 
@@ -367,24 +374,24 @@ var publishMessageToContentChannel = function (request, response) {
         }
         catch (exception) {
             console.log('publishMessageToContentChannel: Invalid JSON "' + requestBody + '"', exception);
-            response.send({error: 'Invalid JSON, error: ' + exception.toString()});
+            response.send({error:'Invalid JSON, error: ' + exception.toString()});
             return;
         }
         if (!message.hasOwnProperty('channel')) {
             console.log('publishMessageToContentChannel: An invalid message object was provided.');
-            response.send({error: 'Invalid message'});
+            response.send({error:'Invalid message'});
             return;
         }
         if (!tokenChannels.hasOwnProperty(message.channel)) {
             console.log('publishMessageToContentChannel: The channel "' + message.channel + '" doesn\'t exist.');
-            response.send({error: 'Invalid message'});
+            response.send({error:'Invalid message'});
             return;
         }
 
         for (var socketId in tokenChannels[message.channel].sockets) {
             publishMessageToClient(socketId, message);
         }
-        response.send({sent: 'sent'});
+        response.send({sent:'sent'});
     });
 }
 
@@ -435,11 +442,11 @@ var kickUser = function (request, response) {
                 }
             }
         }
-        response.send({'status': 'success'});
+        response.send({'status':'success'});
         return;
     }
     console.log('Failed to kick user, no uid supplied');
-    response.send({'status': 'failed', 'error': 'missing uid'});
+    response.send({'status':'failed', 'error':'missing uid'});
 };
 
 /**
@@ -462,18 +469,18 @@ var logoutUser = function (request, response) {
                 }
             }
         }
-        response.send({'status': 'success'});
+        response.send({'status':'success'});
         return;
     }
     console.log('Failed to logout user, no authToken supplied');
-    response.send({'status': 'failed', 'error': 'missing authToken'});
+    response.send({'status':'failed', 'error':'missing authToken'});
 };
 
 /**
  * Get the list of backend uids and authTokens connected to a content token channel.
  */
 var getContentTokenChannelUsers = function (channel) {
-    var users = {uids: [], authTokens: []};
+    var users = {uids:[], authTokens:[]};
     for (var sessionId in tokenChannels[channel].sockets) {
         if (io.sockets.sockets[sessionId].uid) {
             users.uids.push(io.sockets.sockets[sessionId].uid);
@@ -496,7 +503,7 @@ var getNodejsSessionIdsFromUid = function (uid) {
         }
     }
     if (settings.debug) {
-        console.log('getNodejsSessionIdsFromUid', {uid: uid, sessionIds: sessionIds});
+        console.log('getNodejsSessionIdsFromUid', {uid:uid, sessionIds:sessionIds});
     }
     return sessionIds;
 }
@@ -512,7 +519,7 @@ var getNodejsSessionIdsFromAuthToken = function (authToken) {
         }
     }
     if (settings.debug) {
-        console.log('getNodejsSessionIdsFromAuthToken', {authToken: authToken, sessionIds: sessionIds});
+        console.log('getNodejsSessionIdsFromAuthToken', {authToken:authToken, sessionIds:sessionIds});
     }
     return sessionIds;
 }
@@ -526,15 +533,15 @@ var addUserToChannel = function (request, response) {
     if (uid && channel) {
         if (!/^\d+$/.test(uid)) {
             console.log("Invalid uid: " + uid);
-            response.send({'status': 'failed', 'error': 'Invalid uid.'});
+            response.send({'status':'failed', 'error':'Invalid uid.'});
             return;
         }
         if (!/^[a-z0-9_]+$/i.test(channel)) {
             console.log("Invalid channel: " + channel);
-            response.send({'status': 'failed', 'error': 'Invalid channel name.'});
+            response.send({'status':'failed', 'error':'Invalid channel name.'});
             return;
         }
-        channels[channel] = channels[channel] || {'sessionIds': {}};
+        channels[channel] = channels[channel] || {'sessionIds':{}};
         var sessionIds = getNodejsSessionIdsFromUid(uid);
         if (sessionIds.length > 0) {
             for (var i in sessionIds) {
@@ -543,11 +550,11 @@ var addUserToChannel = function (request, response) {
             if (settings.debug) {
                 console.log("Added channel '" + channel + "' to sessionIds " + sessionIds.join());
             }
-            response.send({'status': 'success'});
+            response.send({'status':'success'});
         }
         else {
             console.log("No active sessions for uid: " + uid);
-            response.send({'status': 'failed', 'error': 'No active sessions for uid.'});
+            response.send({'status':'failed', 'error':'No active sessions for uid.'});
         }
         for (var authToken in authenticatedClients) {
             if (authenticatedClients[authToken].uid == uid) {
@@ -562,7 +569,7 @@ var addUserToChannel = function (request, response) {
     }
     else {
         console.log("Missing uid or channel");
-        response.send({'status': 'failed', 'error': 'Missing uid or channel'});
+        response.send({'status':'failed', 'error':'Missing uid or channel'});
     }
 };
 
@@ -574,21 +581,21 @@ var addAuthTokenToChannel = function (request, response) {
     var channel = request.params.channel || '';
     if (!authToken || !channel) {
         console.log("Missing authToken or channel");
-        response.send({'status': 'failed', 'error': 'Missing authToken or channel'});
+        response.send({'status':'failed', 'error':'Missing authToken or channel'});
         return;
     }
 
     if (!/^[a-z0-9_]+$/i.test(channel)) {
         console.log("Invalid channel: " + channel);
-        response.send({'status': 'failed', 'error': 'Invalid channel name.'});
+        response.send({'status':'failed', 'error':'Invalid channel name.'});
         return;
     }
     if (!authenticatedClients[authToken]) {
         console.log("Unknown authToken : " + authToken);
-        response.send({'status': 'failed', 'error': 'Invalid authToken.'});
+        response.send({'status':'failed', 'error':'Invalid authToken.'});
         return;
     }
-    channels[channel] = channels[channel] || {'sessionIds': {}};
+    channels[channel] = channels[channel] || {'sessionIds':{}};
     var sessionIds = getNodejsSessionIdsFromAuthtoken(authToken);
     if (sessionIds.length > 0) {
         for (var i in sessionIds) {
@@ -597,11 +604,11 @@ var addAuthTokenToChannel = function (request, response) {
         if (settings.debug) {
             console.log("Added sessionIds '" + sessionIds.join() + "' to channel '" + channel + "'");
         }
-        response.send({'status': 'success'});
+        response.send({'status':'success'});
     }
     else {
         console.log("No active sessions for authToken: " + authToken);
-        response.send({'status': 'failed', 'error': 'No active sessions for uid.'});
+        response.send({'status':'failed', 'error':'No active sessions for uid.'});
     }
     if (authenticatedClients[authToken].channels.indexOf(channel) == -1) {
         authenticatedClients[authToken].channels.push(channel);
@@ -623,7 +630,7 @@ var addClientToChannel = function (sessionId, channel) {
             console.log("addClientToChannel: Invalid channel: " + channel);
         }
         else {
-            channels[channel] = channels[channel] || {'sessionIds': {}};
+            channels[channel] = channels[channel] || {'sessionIds':{}};
             channels[channel].sessionIds[sessionId] = sessionId;
             if (settings.debug) {
                 console.log("Added channel '" + channel + "' to sessionId " + sessionId);
@@ -645,7 +652,7 @@ var removeChannel = function (request, response) {
     if (channel) {
         if (!/^[a-z0-9_]+$/i.test(channel)) {
             console.log('Invalid channel: ' + channel);
-            response.send({'status': 'failed', 'error': 'Invalid channel name.'});
+            response.send({'status':'failed', 'error':'Invalid channel name.'});
             return;
         }
         if (channels[channel]) {
@@ -653,17 +660,17 @@ var removeChannel = function (request, response) {
             if (settings.debug) {
                 console.log("Successfully removed channel '" + channel + "'");
             }
-            response.send({'status': 'success'});
+            response.send({'status':'success'});
         }
         else {
             console.log("Non-existent channel name '" + channel + "'");
-            response.send({'status': 'failed', 'error': 'Non-existent channel name.'});
+            response.send({'status':'failed', 'error':'Non-existent channel name.'});
             return;
         }
     }
     else {
         console.log("Missing channel");
-        response.send({'status': 'failed', 'error': 'Invalid data: missing channel'});
+        response.send({'status':'failed', 'error':'Invalid data: missing channel'});
     }
 }
 
@@ -675,23 +682,23 @@ var addChannel = function (request, response) {
     if (channel) {
         if (!/^[a-z0-9_]+$/i.test(channel)) {
             console.log('Invalid channel: ' + channel);
-            response.send({'status': 'failed', 'error': 'Invalid channel name.'});
+            response.send({'status':'failed', 'error':'Invalid channel name.'});
             return;
         }
         if (channels[channel]) {
             console.log("Channel name '" + channel + "' already exists.");
-            response.send({'status': 'failed', 'error': "Channel name '" + channel + "' already exists."});
+            response.send({'status':'failed', 'error':"Channel name '" + channel + "' already exists."});
             return;
         }
-        channels[channel] = {'sessionIds': {}};
+        channels[channel] = {'sessionIds':{}};
         if (settings.debug) {
             console.log("Successfully added channel '" + channel + "'");
         }
-        response.send({'status': 'success'});
+        response.send({'status':'success'});
     }
     else {
         console.log("Missing channel");
-        response.send({'status': 'failed', 'error': 'Invalid data: missing channel'});
+        response.send({'status':'failed', 'error':'Invalid data: missing channel'});
     }
 }
 
@@ -704,12 +711,12 @@ var removeUserFromChannel = function (request, response) {
     if (uid && channel) {
         if (!/^\d+$/.test(uid)) {
             console.log('Invalid uid: ' + uid);
-            response.send({'status': 'failed', 'error': 'Invalid uid.'});
+            response.send({'status':'failed', 'error':'Invalid uid.'});
             return;
         }
         if (!/^[a-z0-9_]+$/i.test(channel)) {
             console.log('Invalid channel: ' + channel);
-            response.send({'status': 'failed', 'error': 'Invalid channel name.'});
+            response.send({'status':'failed', 'error':'Invalid channel name.'});
             return;
         }
         if (channels[channel]) {
@@ -730,17 +737,17 @@ var removeUserFromChannel = function (request, response) {
             if (settings.debug) {
                 console.log("Successfully removed uid '" + uid + "' from channel '" + channel + "'");
             }
-            response.send({'status': 'success'});
+            response.send({'status':'success'});
         }
         else {
             console.log("Non-existent channel name '" + channel + "'");
-            response.send({'status': 'failed', 'error': 'Non-existent channel name.'});
+            response.send({'status':'failed', 'error':'Non-existent channel name.'});
             return;
         }
     }
     else {
         console.log("Missing uid or channel");
-        response.send({'status': 'failed', 'error': 'Invalid data'});
+        response.send({'status':'failed', 'error':'Invalid data'});
     }
 }
 
@@ -753,12 +760,12 @@ var removeAuthTokenFromChannel = function (request, response) {
     if (authToken && channel) {
         if (!authenticatedClients[authToken]) {
             console.log('Invalid authToken: ' + uid);
-            response.send({'status': 'failed', 'error': 'Invalid authToken.'});
+            response.send({'status':'failed', 'error':'Invalid authToken.'});
             return;
         }
         if (!/^[a-z0-9_]+$/i.test(channel)) {
             console.log('Invalid channel: ' + channel);
-            response.send({'status': 'failed', 'error': 'Invalid channel name.'});
+            response.send({'status':'failed', 'error':'Invalid channel name.'});
             return;
         }
         if (channels[channel]) {
@@ -777,17 +784,17 @@ var removeAuthTokenFromChannel = function (request, response) {
             if (settings.debug) {
                 console.log("Successfully removed authToken '" + authToken + "' from channel '" + channel + "'.");
             }
-            response.send({'status': 'success'});
+            response.send({'status':'success'});
         }
         else {
             console.log("Non-existent channel name '" + channel + "'");
-            response.send({'status': 'failed', 'error': 'Non-existent channel name.'});
+            response.send({'status':'failed', 'error':'Non-existent channel name.'});
             return;
         }
     }
     else {
         console.log("Missing authToken or channel");
-        response.send({'status': 'failed', 'error': 'Invalid data'});
+        response.send({'status':'failed', 'error':'Invalid data'});
     }
 }
 
@@ -825,26 +832,26 @@ var setUserPresenceList = function (uid, uids) {
     if (uid && uidlist) {
         if (!/^\d+$/.test(uid)) {
             console.log("Invalid uid: " + uid);
-            response.send({'status': 'failed', 'error': 'Invalid uid.'});
+            response.send({'status':'failed', 'error':'Invalid uid.'});
             return;
         }
         if (uidlist.length == 0) {
             console.log("Empty uidlist");
-            response.send({'status': 'failed', 'error': 'Empty uid list.'});
+            response.send({'status':'failed', 'error':'Empty uid list.'});
             return;
         }
         for (var i in uidlist) {
             if (!/^\d+$/.test(uidlist[i])) {
                 console.log("Invalid uid: " + uid);
-                response.send({'status': 'failed', 'error': 'Invalid uid.'});
+                response.send({'status':'failed', 'error':'Invalid uid.'});
                 return;
             }
         }
         onlineUsers[uid] = uidlist;
-        response.send({'status': 'success'});
+        response.send({'status':'success'});
     }
     else {
-        response.send({'status': 'failed', 'error': 'Invalid parameters.'});
+        response.send({'status':'failed', 'error':'Invalid parameters.'});
     }
 }
 
@@ -906,11 +913,11 @@ var checkTokenChannelStatus = function (tokenChannel, socket) {
     // We didn't find a socket for this uid, and we have other sockets in this,
     // channel, so send disconnect notification message.
     var message = {
-        'channel': tokenChannel,
-        'contentChannelNotification': true,
-        'data': {
-            'uid': socket.uid,
-            'type': 'disconnect'
+        'channel':tokenChannel,
+        'contentChannelNotification':true,
+        'data':{
+            'uid':socket.uid,
+            'type':'disconnect'
         }
     };
     for (var socketId in tokenChannels[tokenChannel].sockets) {
@@ -936,7 +943,7 @@ var checkOnlineStatus = function (uid) {
 var setUserOffline = function (uid) {
     sendPresenceChangeNotification(uid, 'offline');
     delete onlineUsers[uid];
-    sendMessageToBackend({uid: uid, messageType: 'userOffline'}, function (response) {
+    sendMessageToBackend({uid:uid, messageType:'userOffline'}, function (response) {
     });
 }
 
@@ -958,15 +965,15 @@ var setContentToken = function (request, response) {
         }
         catch (exception) {
             console.log('setContentToken: Invalid JSON "' + requestBody + '"', exception);
-            response.send({error: 'Invalid JSON, error: ' + exception.toString()});
+            response.send({error:'Invalid JSON, error: ' + exception.toString()});
             return;
         }
-        tokenChannels[message.channel] = tokenChannels[message.channel] || {'tokens': {}, 'sockets': {}};
+        tokenChannels[message.channel] = tokenChannels[message.channel] || {'tokens':{}, 'sockets':{}};
         tokenChannels[message.channel].tokens[message.token] = message;
         if (settings.debug) {
             console.log('setContentToken', message.token, 'for channel', message.channel);
         }
-        response.send({status: 'ok'});
+        response.send({status:'ok'});
     });
 }
 
@@ -982,7 +989,7 @@ var setupClientConnection = function (sessionId, authData, contentTokens) {
     io.sockets.sockets[sessionId].authToken = authData.authToken;
     io.sockets.sockets[sessionId].uid = authData.uid;
     for (var i in authData.channels) {
-        channels[authData.channels[i]] = channels[authData.channels[i]] || {'sessionIds': {}};
+        channels[authData.channels[i]] = channels[authData.channels[i]] || {'sessionIds':{}};
         channels[authData.channels[i]].sessionIds[sessionId] = sessionId;
     }
     if (authData.uid != 0) {
@@ -995,7 +1002,7 @@ var setupClientConnection = function (sessionId, authData, contentTokens) {
 
     var clientToken = '';
     for (var tokenChannel in contentTokens) {
-        tokenChannels[tokenChannel] = tokenChannels[tokenChannel] || {'tokens': {}, 'sockets': {}};
+        tokenChannels[tokenChannel] = tokenChannels[tokenChannel] || {'tokens':{}, 'sockets':{}};
 
         clientToken = contentTokens[tokenChannel];
         if (tokenChannels[tokenChannel].tokens[clientToken]) {
@@ -1015,6 +1022,28 @@ var setupClientConnection = function (sessionId, authData, contentTokens) {
     }
 };
 
+/**
+ * Create express app, and configure it.
+ */
+var app = express();
+app.all(settings.baseAuthPath + '*', checkServiceKeyCallback);
+app.post(settings.baseAuthPath + settings.publishUrl, publishMessage);
+app.get(settings.baseAuthPath + settings.kickUserUrl, kickUser);
+app.get(settings.baseAuthPath + settings.logoutUserUrl, logoutUser);
+app.get(settings.baseAuthPath + settings.addUserToChannelUrl, addUserToChannel);
+app.get(settings.baseAuthPath + settings.removeUserFromChannelUrl, removeUserFromChannel);
+app.get(settings.baseAuthPath + settings.addChannelUrl, addChannel);
+app.get(settings.baseAuthPath + settings.removeChannelUrl, removeChannel);
+app.get(settings.baseAuthPath + settings.setUserPresenceListUrl, setUserPresenceList);
+app.post(settings.baseAuthPath + settings.toggleDebugUrl, toggleDebug);
+app.post(settings.baseAuthPath + settings.getContentTokenUsersUrl, getContentTokenUsers);
+app.post(settings.baseAuthPath + settings.contentTokenUrl, setContentToken);
+app.post(settings.baseAuthPath + settings.publishMessageToContentChannelUrl, publishMessageToContentChannel);
+app.get('*', send404);
+
+/**
+ * Create node http(s) server, and pass our express app as the handler callback.
+ */
 var server;
 if (settings.scheme == 'https') {
     var sslOptions = {
@@ -1024,32 +1053,15 @@ if (settings.scheme == 'https') {
     if (settings.sslCAPath) {
         sslOptions.ca = fs.readFileSync(settings.sslCAPath);
     }
-    server = express.createServer(sslOptions);
+    server = https.createServer(sslOptions, app);
 }
 else {
-    var http = require('http');
-    //server = express.createServer();
-    server = http.createServer(express);
+    server = http.createServer(app);
 }
-
-express.all(settings.baseAuthPath + '*', checkServiceKeyCallback);
-express.post(settings.baseAuthPath + settings.publishUrl, publishMessage);
-express.get(settings.baseAuthPath + settings.kickUserUrl, kickUser);
-express.get(settings.baseAuthPath + settings.logoutUserUrl, logoutUser);
-express.get(settings.baseAuthPath + settings.addUserToChannelUrl, addUserToChannel);
-express.get(settings.baseAuthPath + settings.removeUserFromChannelUrl, removeUserFromChannel);
-express.get(settings.baseAuthPath + settings.addChannelUrl, addChannel);
-express.get(settings.baseAuthPath + settings.removeChannelUrl, removeChannel);
-express.get(settings.baseAuthPath + settings.setUserPresenceListUrl, setUserPresenceList);
-express.post(settings.baseAuthPath + settings.toggleDebugUrl, toggleDebug);
-express.post(settings.baseAuthPath + settings.getContentTokenUsersUrl, getContentTokenUsers);
-express.post(settings.baseAuthPath + settings.contentTokenUrl, setContentToken);
-express.post(settings.baseAuthPath + settings.publishMessageToContentChannelUrl, publishMessageToContentChannel);
-express.get('*', send404);
 server.listen(settings.port, settings.host);
 console.log('Started ' + settings.scheme + ' server.');
 
-var io = socket_io.listen(server, {port: settings.port, resource: settings.resource});
+var io = socket_io.listen(server, {port:settings.port, resource:settings.resource});
 io.configure(function () {
     io.set('transports', settings.transports);
     io.set('log level', settings.logLevel);
@@ -1128,14 +1140,14 @@ var invokeExtensions = function (hook) {
  * so we provide them with references.
  */
 var extensionsConfig = {
-    'publishMessageToChannel': publishMessageToChannel,
-    'publishMessageToClient': publishMessageToClient,
-    'addClientToChannel': addClientToChannel,
-    'settings': settings,
-    'channels': channels,
-    'io': io,
-    'tokenChannels': tokenChannels,
-    'sendMessageToBackend': sendMessageToBackend
+    'publishMessageToChannel':publishMessageToChannel,
+    'publishMessageToClient':publishMessageToClient,
+    'addClientToChannel':addClientToChannel,
+    'settings':settings,
+    'channels':channels,
+    'io':io,
+    'tokenChannels':tokenChannels,
+    'sendMessageToBackend':sendMessageToBackend
 };
 invokeExtensions('setup', extensionsConfig);
 

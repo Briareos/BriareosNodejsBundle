@@ -18,32 +18,16 @@ class Nodejs extends \Twig_Extension
         $this->authenticator = $authenticator;
     }
 
-    public function getGlobals()
-    {
-        return array(
-            'nodejs' => array(
-                'secure' => $this->dispatcher->getSecure(),
-                'host' => $this->dispatcher->getHost(),
-                'port' => $this->dispatcher->getPort(),
-                'connect_timeout' => $this->dispatcher->getConnectTimeout(),
-                'resource' => $this->dispatcher->getResource(),
-                'websocket_swf_location' => $this->dispatcher->getWebsocketSwfLocation()
-            ),
-        );
-    }
-
     public function getFunctions()
     {
         return array(
-            'nodejs_auth_token' => new \Twig_Function_Method($this, 'getAuthToken'),
+            'socket_io_resource' => new \Twig_Function_Method($this, 'getSocketIoResource')
         );
     }
 
-    public function getAuthToken(Session $session, NodejsSubjectInterface $subject = null)
+    public function getSocketIoResource()
     {
-        // @TODO this job definitely shouldn't be left to twig, in fact, the whole method smells, with its arguments and all
-        $this->authenticator->authenticate($session, $subject);
-        return $this->authenticator->generateAuthToken($session, $subject);
+        return sprintf('//%s:%s%s/socket.io.js', $this->dispatcher->getHost(), $this->dispatcher->getPort(), $this->dispatcher->getResource());
     }
 
     public function getName()

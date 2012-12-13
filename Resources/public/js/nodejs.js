@@ -28,51 +28,59 @@
             throw "IO isn't defined.";
         }
         this.socket = window.io.connect(this.url, {'connect timeout':this.settings.connectTimeout});
+        this.socket.on('message', function (message) {
+            // It's possible that this message originated from an ajax request from the client associated with this socket.
+            if (message.clientSocketId === nodejs.socket.socket.sessionid) {
+                window.console.log('This message originated from an ajax request from the client associated with this socket.');
+            }
+
+            if (message.callback) {
+                if (typeof message.callback == 'string') {
+                    message.callback = [message.callback];
+                }
+            }
+            $.each(message.callback, function () {
+                var callback = this;
+                //if (nodejs.callbacks[callback] && $.isFunction(nodejs.callbacks[callback])) {
+                    try {
+                        nodejs.callbacks[callback](message);
+                    }
+                    catch (exception) {
+                        console.log(exception);
+                    }
+                //}
+            });
+            if (typeof message.presenceNotification !== 'undefined') {
+                $.each(nodejs.presenceCallbacks, function () {
+                    if ($.isFunction(this)) {
+                        try {
+                            this(message);
+                        }
+                        catch (exception) {
+                            window.console.log(exception);
+                        }
+                    }
+                });
+            }
+            else if (typeof message.contentChannelNotification !== 'undefined') {
+                $.each(nodejs.contentChannelNotificationCallbacks, function () {
+                    if ($.isFunction(this)) {
+                        try {
+                            this(message);
+                        }
+                        catch (exception) {
+                            window.console.log(exception);
+                        }
+                    }
+                });
+            }
+        });
         this.socket.on('connect', function () {
             nodejs.socket.emit('authenticate', {
                 authToken:nodejs.authToken
             });
             nodejs.socketId = nodejs.socket.socket.sessionid;
             nodejs.runSetupHandlers('connect');
-            nodejs.socket.on('message', function (message) {
-                // It's possible that this message originated from an ajax request from the client associated with this socket.
-                if (message.clientSocketId === nodejs.socket.socket.sessionid) {
-                    window.console.log('This message originated from an ajax request from the client associated with this socket.');
-                }
-
-                if (message.callback && nodejs.callbacks[message.callback] && $.isFunction(nodejs.callbacks[message.callback])) {
-                    try {
-                        nodejs.callbacks[message.callback](message);
-                    }
-                    catch (exception) {
-                        window.console.log(exception);
-                    }
-                }
-                else if (typeof message.presenceNotification !== 'undefined') {
-                    $.each(nodejs.presenceCallbacks, function () {
-                        if ($.isFunction(this)) {
-                            try {
-                                this(message);
-                            }
-                            catch (exception) {
-                                window.console.log(exception);
-                            }
-                        }
-                    });
-                }
-                else if (typeof message.contentChannelNotification !== 'undefined') {
-                    $.each(nodejs.contentChannelNotificationCallbacks, function () {
-                        if ($.isFunction(this)) {
-                            try {
-                                this(message);
-                            }
-                            catch (exception) {
-                                window.console.log(exception);
-                            }
-                        }
-                    });
-                }
-            });
 
             // nodejs.socket.socket.sessionid;
         });
