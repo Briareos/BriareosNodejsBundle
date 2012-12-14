@@ -5,7 +5,7 @@
     <field name="sessionId" type="string" column="sessionId" length="255"/>
     <field name="createdAt" type="datetime" column="createdAt"/>
     <field name="seenAt" type="datetime" column="seenAt"/>
-    <many-to-one field="subject" target-entity="Kurumi\UserBundle\Entity\User">
+    <many-to-one field="subject" target-entity="Briareos\NodejsBundle\Entity\NodejsSubjectInterface">
       <join-columns>
         <join-column name="subject_id" referenced-column-name="id" on-delete="CASCADE"/>
       </join-columns>
