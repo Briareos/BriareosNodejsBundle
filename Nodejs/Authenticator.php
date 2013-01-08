@@ -10,13 +10,15 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
 class Authenticator
 {
     private $em;
+
     private $repository;
+
     private $lifetime;
 
-    public function __construct(EntityManager $em, $repositoryName, $lifetime)
+    public function __construct(EntityManager $em, $presenceClassName, $lifetime)
     {
         $this->em = $em;
-        $this->repository = $em->getRepository($repositoryName);
+        $this->repository = $em->getRepository($presenceClassName);
         $this->lifetime = $lifetime;
     }
 

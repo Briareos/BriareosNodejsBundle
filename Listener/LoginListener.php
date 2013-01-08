@@ -9,21 +9,18 @@ use Symfony\Component\HttpFoundation\Request;
 
 class LoginListener
 {
-    private $securityContext;
     private $authenticator;
-    private $request;
 
-    public function __construct(SecurityContextInterface $securityContext, Authenticator $authenticator, Request $request)
+    public function __construct(Authenticator $authenticator)
     {
-        $this->securityContext = $securityContext;
         $this->authenticator = $authenticator;
-        $this->request = $request;
     }
 
     public function onSecurityInteractiveLogin(InteractiveLoginEvent $event)
     {
+        $request = $event->getRequest();
         $user = $event->getAuthenticationToken()->getUser();
-        $session = $this->request->getSession();
+        $session = $request->getSession();
         if ($session !== null) {
             $this->authenticator->authenticate($session, $user);
         }

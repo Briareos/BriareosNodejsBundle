@@ -1,0 +1,36 @@
+<?xml version="1.0" ?>
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+    <parameters>
+        <parameter key="nodejs.dispatcher.class">Briareos\NodejsBundle\Nodejs\Dispatcher</parameter>
+        <parameter key="nodejs.twig.extension.class">Briareos\NodejsBundle\Twig\Extension\Nodejs</parameter>
+        <parameter key="nodejs.authenticator.class">Briareos\NodejsBundle\Nodejs\Authenticator</parameter>
+        <parameter key="nodejs.presence_entity.class">Briareos\NodejsBundle\Entity\NodejsPresence</parameter>
+        <parameter key="nodejs.login_listener.class">Briareos\NodejsBundle\Listener\LoginListener</parameter>
+    </parameters>
+    <services>
+        <service id="nodejs.dispatcher" class="%nodejs.dispatcher.class%">
+            <argument>%nodejs.dispatcher.secure%</argument>
+            <argument>%nodejs.dispatcher.host%</argument>
+            <argument>%nodejs.dispatcher.port%</argument>
+            <argument>%nodejs.dispatcher.connect_timeout%</argument>
+            <argument>%nodejs.dispatcher.resource%</argument>
+            <argument>%nodejs.dispatcher.service_key%</argument>
+        </service>
+        <service id="nodejs.twig.extension" class="%nodejs.twig.extension.class%">
+            <argument type="service" id="nodejs.dispatcher"/>
+            <argument type="service" id="nodejs.authenticator"/>
+            <tag name="twig.extension"/>
+        </service>
+        <service id="nodejs.authenticator" class="%nodejs.authenticator.class%">
+            <argument type="service" id="doctrine.orm.default_entity_manager"/>
+            <argument>%nodejs.presence_entity.class%</argument>
+            <argument>%nodejs.authenticator.lifetime%</argument>
+        </service>
+        <service id="nodejs.login_listener" class="%nodejs.login_listener.class%">
+            <argument type="service" id="nodejs.authenticator"/>
+            <tag name="kernel.event_listener" event="security.interactive_login" method="onSecurityInteractiveLogin"/>
+        </service>
+    </services>
+</container>
