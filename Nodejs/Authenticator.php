@@ -27,9 +27,11 @@ class Authenticator
         $presenceClassName = $this->repository->getClassName();
         $authToken = $this->generateAuthToken($session, $subject);
         /** @var $presence \Briareos\NodejsBundle\Entity\NodejsPresence */
-        $presence = $this->repository->findOneBy(array(
-            'authToken' => $authToken,
-        ));
+        $presence = $this->repository->findOneBy(
+            array(
+                'authToken' => $authToken,
+            )
+        );
         if ($presence === null) {
             $presence = new $presenceClassName();
             $presence->setSessionId($session->getId());
@@ -43,8 +45,23 @@ class Authenticator
         $this->em->flush($presence);
     }
 
+    public function invalidate(SessionInterface $session, NodejsSubjectInterface $subject = null)
+    {
+        $authToken = $this->generateAuthToken($session, $subject);
+        $presence = $this->repository->findOneBy(
+            array(
+                'authToken' => $authToken,
+            )
+        );
+        if ($presence === null) {
+            return;
+        }
+        $this->em->remove($presence);
+        $this->em->flush();
+    }
+
     /**
-     * @param SessionInterface $session
+     * @param string $authToken
      * @return \Briareos\NodejsBundle\Entity\NodejsPresence
      */
     public function getPresence($authToken)
@@ -57,10 +74,11 @@ class Authenticator
         if ($subject !== null) {
             return md5($session->getId() . '-' . $subject->getId() . '-' . $subject->getSalt());
         }
+
         return md5($session->getId());
     }
 
-    public function initiateGarbageCollector()
+    public function runGarbageCollector()
     {
         // @TODO garbage collector
     }

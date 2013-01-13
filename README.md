@@ -20,13 +20,23 @@ pushing updates to open connected clients.
                 resolve_target_entities:
                     Briareos\NodejsBundle\Entity\NodejsSubject: App\UserBundle\Entity\User
 
+1.  To delete a session when a user logs out, add this ti your `security.yml`.
+
+        # app/config/security.yml
+        firewalls:
+            my_firewall_name:
+                logout:
+                    invalidate_session: false
+                    handlers:
+                        - security.logout.handler.nodejs_invalidator
+
 1.  Update your schema
 
         $ php app/console doctrine:schema:update --force
 
-1.  Install the required Node.js packages, `socket.io`, `connect` and `express`, and all their dependencies.
+1.  Install the required Node.js packages, `socket.io` and `express`, and all their dependencies.
 
-        $ npm install -g socket.io express
+        $ npm install socket.io express
 
     >Note: the *express* package must be version 3.0beta5 or newer.
 
