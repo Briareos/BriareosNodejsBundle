@@ -6,8 +6,9 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Doctrine\ORM\EntityManager;
 use Briareos\NodejsBundle\Entity\NodejsSubjectInterface;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Briareos\NodejsBundle\Nodejs\AuthenticatorInterface;
 
-class Authenticator
+class Authenticator implements AuthenticatorInterface
 {
     private $em;
 
@@ -69,7 +70,7 @@ class Authenticator
         return $this->repository->find($authToken);
     }
 
-    public static function generateAuthToken(SessionInterface $session, NodejsSubjectInterface $subject = null)
+    public function generateAuthToken(SessionInterface $session, NodejsSubjectInterface $subject = null)
     {
         if ($subject !== null) {
             return md5($session->getId() . '-' . $subject->getId() . '-' . $subject->getSalt());
