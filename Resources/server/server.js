@@ -13,6 +13,7 @@ var request = require('request'),
     socket_io = require('socket.io'),
     util = require('util'),
     querystring = require('querystring'),
+    path = require('path'),
     vm = require('vm');
 
 var channels = {},
@@ -61,7 +62,7 @@ var channels = {},
     extensions = [];
 
 try {
-    var settings = vm.runInThisContext(fs.readFileSync(process.cwd() + '/server.config.js'));
+    var settings = vm.runInThisContext(fs.readFileSync(path.resolve(__dirname, 'server.config.js')));
 } catch (exception) {
     console.log("Failed to read config file, exiting: " + exception);
     process.exit(1);
