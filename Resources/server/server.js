@@ -1059,7 +1059,8 @@ if (settings.scheme == 'https') {
 else {
     server = http.createServer(app);
 }
-server.listen(settings.port, settings.host);
+//server.listen(settings.port, settings.host);
+server.listen(settings.port);
 console.log('Started ' + settings.scheme + ' server.');
 
 var io = socket_io.listen(server, {port:settings.port, resource:settings.resource});
