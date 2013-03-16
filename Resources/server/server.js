@@ -54,8 +54,8 @@ var channels = {},
             host:'localhost',
             scheme:'http',
             port:80,
-            basePath:'',
-            messagePath:'/nodejs/message'
+        basePath: '/',
+        messagePath: 'nodejs/message'
         },
         logLevel:1
     },
@@ -112,8 +112,8 @@ var channelIsClientWritable = function (channel) {
  * Returns the backend url.
  */
 var getBackendUrl = function () {
-    return settings.backend.scheme + '://' + settings.backend.host + ':' +
-        settings.backend.port + settings.backend.messagePath;
+  return settings.backend.scheme + '://' + settings.backend.host + ':' +
+         settings.backend.port + settings.backend.basePath + settings.backend.messagePath;
 }
 
 /**
@@ -126,7 +126,7 @@ var sendMessageToBackend = function (message, callback) {
     });
 
     var options = {
-        uri:settings.backend.scheme + '://' + settings.backend.host + (settings.backend.port == 80 ? '' : ':' + settings.backend.port) + settings.backend.messagePath,
+    uri: getBackendUrl(),
         body:requestBody,
         headers:{
             'Content-Length':Buffer.byteLength(requestBody),
@@ -624,7 +624,7 @@ var addAuthTokenToChannel = function (request, response) {
  */
 var addClientToChannel = function (sessionId, channel) {
     if (sessionId && channel) {
-        if (!/^[0-9]+$/.test(sessionId) || !io.sockets.sockets.hasOwnProperty(sessionId)) {
+    if (!/^[0-9a-z_-]+$/i.test(sessionId) || !io.sockets.sockets.hasOwnProperty(sessionId)) {
             console.log("addClientToChannel: Invalid sessionId: " + sessionId);
         }
         else if (!/^[a-z0-9_]+$/i.test(channel)) {
@@ -804,7 +804,7 @@ var removeAuthTokenFromChannel = function (request, response) {
  */
 var removeClientFromChannel = function (sessionId, channel) {
     if (sessionId && channel) {
-        if (!/^[0-9]+$/.test(sessionId) || !io.sockets.sockets.hasOwnProperty(sessionId)) {
+    if (!/^[0-9a-z_-]+$/i.test(sessionId) || !io.sockets.sockets.hasOwnProperty(sessionId)) {
             console.log("removeClientFromChannel: Invalid sessionId: " + sessionId);
         }
         else if (!/^[a-z0-9_]+$/i.test(channel) || !channels.hasOwnProperty(channel)) {

@@ -4,7 +4,7 @@ namespace Briareos\NodejsBundle\Controller;
 
 use Symfony\Component\DependencyInjection\ContainerAware;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
-use Symfony\Component\Security\Core\Exception\AccessDeniedException;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpFoundation\Response;
 use Briareos\NodejsBundle\Entity\NodejsPresence;
 use Briareos\NodejsBundle\Entity\NodejsSubjectInterface;
@@ -15,7 +15,7 @@ class NodejsController extends ContainerAware
     /**
      * @Route("/nodejs/message", name="nodejs_message")
      *
-     * @throws AccessDeniedException
+     * @throws AccessDeniedHttpException
      *
      * @return \Symfony\Component\HttpFoundation\Response
      */
@@ -29,7 +29,7 @@ class NodejsController extends ContainerAware
         $request = $this->container->get('request');
 
         if ($dispatcher->getServiceKey() !== $request->request->getAlnum('serviceKey', '')) {
-            throw new AccessDeniedException('Invalid service key provided.');
+            throw new AccessDeniedHttpException('Invalid service key provided.');
         }
         $message = json_decode($request->request->get('messageJson'));
         $responseData = array();
@@ -65,7 +65,7 @@ class NodejsController extends ContainerAware
                 // $message['uid'] has went offline, or just refreshed his browser.
                 break;
             default:
-                throw new AccessDeniedException(sprintf('Invalid message type: %s', $message->messageType));
+                throw new AccessDeniedHttpException(sprintf('Invalid message type: %s', $message->messageType));
         }
 
         $response = new Response(json_encode($responseData));
