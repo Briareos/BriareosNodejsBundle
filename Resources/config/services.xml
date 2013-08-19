@@ -3,37 +3,37 @@
            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
     <parameters>
-        <parameter key="nodejs.dispatcher.class">Briareos\NodejsBundle\Nodejs\Dispatcher</parameter>
-        <parameter key="nodejs.twig.extension.class">Briareos\NodejsBundle\Twig\Extension\Nodejs</parameter>
-        <parameter key="nodejs.authenticator.class">Briareos\NodejsBundle\Nodejs\Authenticator</parameter>
-        <parameter key="nodejs.presence_entity.class">Briareos\NodejsBundle\Entity\NodejsPresence</parameter>
-        <parameter key="nodejs.login_listener.class">Briareos\NodejsBundle\Listener\LoginListener</parameter>
+        <parameter key="briareos_nodejs.dispatcher.class">Briareos\NodejsBundle\Nodejs\Dispatcher</parameter>
+        <parameter key="briareos_nodejs.twig.extension.class">Briareos\NodejsBundle\Twig\Extension\Nodejs</parameter>
+        <parameter key="briareos_nodejs.authenticator.class">Briareos\NodejsBundle\Nodejs\Authenticator</parameter>
+        <parameter key="briareos_nodejs.presence_entity.class">Briareos\NodejsBundle\Entity\NodejsPresence</parameter>
+        <parameter key="briareos_nodejs.login_listener.class">Briareos\NodejsBundle\Listener\LoginListener</parameter>
     </parameters>
     <services>
-        <service id="nodejs.dispatcher" class="%nodejs.dispatcher.class%">
-            <argument>%nodejs.dispatcher.secure%</argument>
-            <argument>%nodejs.dispatcher.host%</argument>
-            <argument>%nodejs.dispatcher.port%</argument>
-            <argument>%nodejs.dispatcher.connect_timeout%</argument>
-            <argument>%nodejs.dispatcher.resource%</argument>
-            <argument>%nodejs.dispatcher.service_key%</argument>
+        <service id="briareos_nodejs.dispatcher" class="%briareos_nodejs.dispatcher.class%">
+            <argument>%briareos_nodejs.dispatcher.secure%</argument>
+            <argument>%briareos_nodejs.dispatcher.host%</argument>
+            <argument>%briareos_nodejs.dispatcher.port%</argument>
+            <argument>%briareos_nodejs.dispatcher.connect_timeout%</argument>
+            <argument>%briareos_nodejs.dispatcher.resource%</argument>
+            <argument>%briareos_nodejs.dispatcher.service_key%</argument>
         </service>
-        <service id="nodejs.twig.extension" class="%nodejs.twig.extension.class%">
-            <argument type="service" id="nodejs.dispatcher"/>
-            <argument type="service" id="nodejs.authenticator"/>
+        <service id="briareos_nodejs.twig.extension" class="%briareos_nodejs.twig.extension.class%">
+            <argument type="service" id="briareos_nodejs.dispatcher"/>
+            <argument type="service" id="briareos_nodejs.authenticator"/>
             <tag name="twig.extension"/>
         </service>
-        <service id="nodejs.authenticator" class="%nodejs.authenticator.class%">
+        <service id="briareos_nodejs.authenticator" class="%briareos_nodejs.authenticator.class%">
             <argument type="service" id="doctrine.orm.default_entity_manager"/>
-            <argument>%nodejs.presence_entity.class%</argument>
-            <argument>%nodejs.authenticator.lifetime%</argument>
+            <argument>%briareos_nodejs.presence_entity.class%</argument>
+            <argument>%briareos_nodejs.authenticator.lifetime%</argument>
         </service>
-        <service id="nodejs.login_listener" class="%nodejs.login_listener.class%">
-            <argument type="service" id="nodejs.authenticator"/>
+        <service id="briareos_nodejs.login_listener" class="%briareos_nodejs.login_listener.class%">
+            <argument type="service" id="briareos_nodejs.authenticator"/>
             <tag name="kernel.event_listener" event="security.interactive_login" method="onSecurityInteractiveLogin"/>
         </service>
-        <service id="security.logout.handler.nodejs_invalidator" class="Briareos\NodejsBundle\Security\NodejsInvalidatorLogoutHandler" public="false">
-            <argument type="service" id="nodejs.authenticator"/>
+        <service id="security.logout.handler.briareos_nodejs_invalidator" class="Briareos\NodejsBundle\Security\NodejsInvalidatorLogoutHandler" public="false">
+            <argument type="service" id="briareos_nodejs.authenticator"/>
         </service>
     </services>
 </container>

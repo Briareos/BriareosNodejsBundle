@@ -1158,7 +1158,7 @@ for (var i in extensions) {
     }
 }
 
-server.get('*', send404);
+app.get('*', send404);
 server.listen(settings.port, settings.host);
 console.log('Started ' + settings.scheme + ' server.');
 

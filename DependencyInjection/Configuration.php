@@ -23,6 +23,7 @@ class Configuration implements ConfigurationInterface
         $rootNode
             ->children()
                 ->arrayNode('dispatcher')
+                    ->addDefaultsIfNotSet()
                     ->children()
                         ->booleanNode('secure')->defaultFalse()->end()
                         ->scalarNode('host')->defaultValue('localhost')->end()
@@ -40,15 +41,12 @@ class Configuration implements ConfigurationInterface
                     ->end()
                 ->end()
                 ->arrayNode('authenticator')
+                    ->addDefaultsIfNotSet()
                     ->children()
                         ->scalarNode('lifetime')->defaultValue(900)->end()
                     ->end()
                 ->end()
             ->end();
-
-        // Here you should define the parameters that are allowed to
-        // configure your bundle. See the documentation linked above for
-        // more information on that topic.
 
         return $treeBuilder;
     }
